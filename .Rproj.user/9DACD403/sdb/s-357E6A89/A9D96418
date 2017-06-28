@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "Tools -> Shell...\n\ngit init\n\ngit add .\n\ngit commit -m \"first commit\"\n\ngit remote add origin https://github.com/oscarvilla/datathonlatam.git\n\ngit push -u origin master",
+    "created" : 1498625331648.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "4259135005",
+    "id" : "A9D96418",
+    "lastKnownWriteTime" : 1498625421,
+    "last_content_update" : 1498625421781,
+    "path" : "~/Documents/datathonlatam/push_repo_to_github.R",
+    "project_path" : "push_repo_to_github.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

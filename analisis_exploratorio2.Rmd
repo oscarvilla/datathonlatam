@@ -159,25 +159,47 @@ Lo importante de este tipo de modelo es que permite extraer la medida en que cad
 
 ### 3.1. Normalizando los datos
 
+Vamos a aplicar normalización, escalado y transofrmaciones BoxCox si son posibles a los datos, excluyendo los nombres de departamentos.
+
 ```{r normaliz, echo=FALSE, cache=TRUE}
 library(caret)
-trans <- preProcess(df_limpio[, 4:38], method = c("BoxCox", "center", "scale"))
+trans <- preProcess(df_limpio[, 2:39], method = c("BoxCox", "center", "scale"))
 trans
 ```
 
-Ya que conocemos los preprocesamientos calculados, sobre todo en lo que tiene que ver con los coeficientes BoxCox para mejorar las 
+Ya que conocemos los preprocesamientos calculados, para centrar y escalar, pero sobre todo  para mejorar los sesgos de las distribuciones por medio de coeficientes BoxCox, los aplicamos.
+
+```{r}
+transformados <- predict(trans, df_limpio[, 2:39])
+```
+
+Modelo sin transformaciones
 
 ```{r}
 acr_tecpro <- df_limpio[, c(1:39)]
 model <- lm(acr_tecpro ~ ., data = acr_tecpro)
 summary(model)
+plot(acr_tecpro$acr_tecpro, predict(model, df_limpio[, c(1:38)]))
+abline(a = 0, b = 1)
 ```
+
+Modelo con transformaciones
+
+```{r}
+acr_tecpro1 <- cbind(departamento = df_limpio$departamento, transformados)
+model1 <- lm(acr_tecpro ~ ., data = acr_tecpro1)
+summary(model1)
+plot(acr_tecpro$acr_tecpro, predict(model, acr_tecpro1[, 1:38]))
+abline(a = 0, b = 1)
+```
+
 
 ```{r}
 acr_tecpro <- df_limpio[, c(2:39)]
 model <- lm(acr_tecpro ~ ., data = acr_tecpro)
 summary(model)
-plot(acr_tecpro$acr_tecpro, predict(model, newdata = data.frame(acr_tecpro[, -c(38)])))
+plot(acr_tecpro$acr_tecpro, predict(model, acr_tecpro[, -c(39)]))
+
 abline(coef = c(0, 1))
 ```
 

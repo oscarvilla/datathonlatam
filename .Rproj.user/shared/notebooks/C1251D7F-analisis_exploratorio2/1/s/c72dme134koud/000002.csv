@@ -1,0 +1,18 @@
+"0","setwd(""~/Documents/datathonlatam"") ## setting dir"
+"0","library(readr)"
+"0","arc <- list.files(""./datasets/educacion_superior"", pattern = "".csv"") ## creating list files csv"
+"0","acreditacion <- read_csv(paste(""./datasets/educacion_superior"", arc[1], sep = ""/""))"
+"2","Parsed with column specification:
+cols(
+  DEPARTAMENTO = col_character(),
+  ANO = col_integer(),
+  `TECNICA PROFESIONAL` = col_integer(),
+  TECNOLOGICA = col_integer(),
+  UNIVERSITARIA = col_integer(),
+  ESPECIALIZACION = col_integer(),
+  MAESTRIA = col_integer(),
+  DOCTORADO = col_integer()
+)
+"
+"0","names(acreditacion) <- c(""departamento"", ""anio"", "
+"0","                         paste(""acr"", gsub(""tecnica profesional"", ""tecpro"", tolower(names(acreditacion)[3:8])), sep = ""_"") )"

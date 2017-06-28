@@ -1,0 +1,1 @@
+"0","transformados <- predict(trans, df_limpio[, 2:39])"
