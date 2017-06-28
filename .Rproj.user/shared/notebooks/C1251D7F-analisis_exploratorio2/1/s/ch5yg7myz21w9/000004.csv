@@ -1,0 +1,46 @@
+"0","library(caret)"
+"0","trans <- preProcess(df_limpio[, 4:38], method = c(""BoxCox"", ""center"", ""scale""))"
+"0","trans"
+"1","Created from"
+"1"," "
+"1","165"
+"1"," "
+"1","samples and"
+"1"," "
+"1","35"
+"1"," "
+"1","variables
+
+"
+"1","Pre-processing:
+"
+"1","  - Box-Cox transformation (12)
+"
+"1","  - centered (35)
+"
+"1","  - ignored (0)
+"
+"1","  - scaled (35)
+"
+"1","
+"
+"1","Lambda estimates for Box-Cox transformation:
+"
+"1","    Min. "
+"1"," 1st Qu. "
+"1","  Median "
+"1","    Mean "
+"1"," 3rd Qu. "
+"1","    Max. "
+"1","
+"
+"1","-0.10000 "
+"1"," 0.00000 "
+"1"," 0.05000 "
+"1"," 0.08333 "
+"1"," 0.20000 "
+"1"," 0.30000 "
+"1","
+"
+"1","
+"

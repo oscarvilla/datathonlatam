@@ -1,0 +1,3 @@
+"0","correlate <- cor(df_limpio[, c(39:44)], df_limpio[, c(2:38)])"
+"0","library(gplots)"
+"0","heatmap.2(correlate, dendrogram='none', Rowv=FALSE, Colv=FALSE,trace='none', margins = c(4, 13))"

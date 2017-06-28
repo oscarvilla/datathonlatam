@@ -1,0 +1,176 @@
+---
+title: "Análisis exploratorio de datos"
+output:
+  html_notebook: default
+  html_document: default
+  pdf_document: default
+---
+
+## 1. Obtener los datos
+
+### 1.1. Datos sobre educación:
+
+Vamos a obtener los datos sobre acreditación por departamentos, años y nivel de educación. Dado que provienen de distintas tablas, es necesario verificar que los años coincidan, los departamentos y su escritura y los niveles educativos:
+
+```{r, get_data, echo=FALSE, message=FALSE}
+setwd("~/Documents/datathonlatam") ## setting dir
+library(readr)
+arc <- list.files("./datasets/educacion_superior", pattern = ".csv") ## creating list files csv
+
+acreditacion <- read_csv(paste("./datasets/educacion_superior", arc[1], sep = "/"))
+names(acreditacion) <- c("departamento", "anio", 
+                         paste("acr", gsub("tecnica profesional", "tecpro", tolower(names(acreditacion)[3:8])), sep = "_") )
+
+cobertura <- read_csv(paste("./datasets/educacion_superior", arc[2], sep = "/"))
+names(cobertura) <- c("departamento", "anio", "cobertura" )
+
+graduados <- read_csv(paste("./datasets/educacion_superior", arc[3], sep = "/"))
+names(graduados) <- c("departamento", "anio", 
+                      paste("gra", gsub("tecnica profesional", "tecpro", tolower(names(graduados)[3:8])), sep = "_") )
+
+matricula <- read_csv(paste("./datasets/educacion_superior", arc[4], sep = "/"))
+names(matricula) <- c("departamento", "anio", 
+                      paste("matr", gsub("tecnica profesional", "tecpro", tolower(names(matricula)[3:8])), sep = "_") )
+
+sector <- read_csv(paste("./datasets/educacion_superior", arc[5], sep = "/"))
+names(sector) <- c("departamento", "anio", tolower(names(sector)[3:4]))
+```
+
+En los datos sobre graduados faltan los del año 2015. Esto implica o renunciar al resto de datos que en otras variables tenemos sobre ese año o a proyectar con base en los datos 2010 - 2014 los de 2015: 
+
+```{r time_series, echo=FALSE}
+library(ggplot2)
+ggplot(data = graduados, aes(x = anio, y = gra_tecpro, colour = departamento)) + geom_line()
+
+ggplot(data = graduados, aes(x = anio, y = gra_tecnologica, colour = departamento)) + geom_line()
+
+ggplot(data = graduados, aes(x = anio, y = gra_universitaria, colour = departamento)) + geom_line()
+
+ggplot(data = graduados, aes(x = anio, y = gra_especializacion, colour = departamento)) + geom_line()
+
+ggplot(data = graduados, aes(x = anio, y = gra_maestria, colour = departamento)) + geom_line()
+
+ggplot(data = graduados, aes(x = anio, y = gra_doctorado, colour = departamento)) + geom_line()
+```
+
+33 * 5 predicciones sobre series de tiempo que no son estacionarias y/o que son de difícil predicción. Este trabajo en sí mismo puede ser una entrega para el concurso: predecir una variable de educación superior. Por lo pronto dejaremos por fuera los datos 2015.
+
+Finalmente mezclemos los datos sobre educación superior en un solo data frame:
+
+```{r, merging, echo=FALSE}
+educacion <- merge(merge(merge(merge(acreditacion, cobertura), graduados), matricula), sector)
+head(educacion)
+print("los departamentos que quedan son:")
+sort(unique(educacion$departamento))
+print("Y los años:")
+sort(unique(educacion$anio))
+departamentos <- sort(unique(educacion$departamento))
+saveRDS(departamentos, "./departamentosRDS")
+```
+
+### 1.2. Obtener los datos sobre PIB:
+
+```{r, import_PIB, echo=FALSE}
+totalpib <- data.frame() ## empty data frame to fill
+k <- 0 ## a counter for naming by department from departamentos var
+departamentos <- readRDS("./departamentosRDS")
+library(readxl) ## library needed to read xls
+for(i in seq(from = 2, to = 66, by = 2)) { ## We'll read even sheets (by number, not by name)
+
+pib <- read_excel("~/Documents/datathonlatam/datasets/Copia de PIB_Departamentos_2015provisional.xls", 
+                 sheet = i, skip = 5, range = "A7:Q59") ## read just a range of the sheet
+pib <- pib[!is.na(pib[, 1]) & !is.na(pib[, 2]), c(1, 2:16)] ## delete NAs and keep 2010 to 2015
+pib <- data.frame(t(pib)) ## transpose
+k <- k + 1 ## increase 'iterator' of departamentos names
+pib$departamento <- departamentos[k] ## namig the departamento
+pib$anio <- rownames(pib) ## anio as value not just as rowname
+pib <- pib[c(2:nrow(pib)), c(48:49, 1:47)] ## erasing first row and reordering cols-vars
+totalpib <- rbind(totalpib, pib) ## stacking results in one data frame
+}
+
+rm(pib) ## erase inecessary data frame
+
+totalpib[, 3:ncol(totalpib)] <- apply(totalpib[, 3:ncol(totalpib)], 2, as.integer) ## data as numeric
+
+print("los departamentos que quedan son:")
+sort(unique(totalpib$departamento))
+print("Y los años:")
+sort(unique(totalpib$anio))
+```
+
+
+### 1.3. Obtener los datos sobre proyecciones poblacionales del DANE según censo 2005:
+
+```{r, censo, echo=FALSE, message=FALSE}
+library(readr)
+dane <- read_csv("./datasets/censo 2005/proyeccion poblacion DANE 2005.csv")
+dane$departamento <- gsub("NARIÑO", "NARINO", dane$departamento)
+
+totaldane <- data.frame()
+for( i in 1:nrow(dane)){
+    temp <- data.frame(departamento = dane[i, 1], 
+                                  anio = seq(2010, 2014), 
+                                  proy = as.numeric(dane[i, 2:6]))
+    totaldane <- rbind(totaldane, temp)
+}
+
+rm(list = c("dane", "temp"))
+
+head(totaldane)
+print("los departamentos que quedan son:")
+sort(unique(totaldane$departamento))
+print("Y los años:")
+sort(unique(totaldane$anio))
+```
+
+### 1.4. Juntar todos los datos:
+
+```{r, join_all, echo=FALSE}
+df <- merge(merge(totaldane, totalpib), educacion)
+df$departamento <- as.factor(df$departamento)
+df$anio <- as.factor(df$anio)
+str(df)
+```
+
+## 2. Análisis exploratorio de datos:
+
+Ahora que tenemos todos los datos juntos, lo primero que podemos revisar son sus correlaciones (dejando por fuera los datos no numéricos, los nombres de los departamentos).
+
+Pero antes tenemos variables del PIB que son suma de otras; éstas que son sumas deben ser retiradas ya que son redundantes: 
+
+```{r, correlaciones, echo=FALSE}
+df_limpio <- df[, -c(4, 10, 15, 18, 23, 26, 30, 36, 40, 50)]
+correlaciones <- cor(df_limpio[, c(3:ncol(df_limpio))])
+heatmap(correlaciones)
+```
+
+```{r}
+
+library(corrplot)
+corrplot(correlaciones, order = "hclust", tl.cex = 0.6, tl.col = "black")
+corrplot(correlaciones, order = "original", tl.cex = 0.6, tl.col = "black", type = "lower")
+
+```
+
+```{r}
+
+library(qgraph)
+qgraph(cor(correlaciones), shape="circle", 
+       posCol="darkblue", negCol="darkred", 
+       layout="spring", vsize=8)
+```
+
+### 2.1 Reducción del espacio de correlaciones:
+
+Dado que tenemos demasiadas variables para revisar sus correlaciones, vamos a reducir el espacio para que nos muestre las que realmente vamos a revisar: Solo vamos a revisar las correlaciones de los factores productivos vs las variables de educación superior.
+
+```{r, reduct_correlations_spaces, echo=FALSE}
+correlate <- cor(df_limpio[, c(3:40)], df_limpio[, c(41:61)])
+library(corrplot)
+corrplot(correlate, order = "original", tl.cex = 0.6, tl.col = "black", type = "lower")
+library(qgraph)
+qgraph(cor(correlate), shape="circle", 
+       posCol="darkblue", negCol="darkred", 
+       layout="spring", vsize=8)
+```
+

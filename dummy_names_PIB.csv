@@ -1,0 +1,48 @@
+nombre_corto,ACTIVIDADES ECONOMICAS,VAL
+X1,"AGRICULTURA, GANADERIA, CAZA, SILVICULTURA Y PESCA",
+X2,Cultivo de café,
+X3,Cultivo de otros productos agrícolas,
+X4,Producción pecuaria y caza incluyendo las actividades veterinarias,
+X5,"Silvicultura, extracción de madera y actividades conexas",
+X6,"Pesca, produccion de peces en criaderos y granjas piscícolas; actividades de servicios relacionadas con la pesca",X
+X7,EXPLOTACION DE MINAS Y CANTERAS,
+X8,"Extracción de carbón, carbón lignítico y turba",
+X9,"Extracción de petróleo crudo y de gas natural; actividades de servicios relacionadas con la extracción de petróleo y de gas, excepto las actividades de prospección; extracción de minerales de uranio y de torio",X
+X10,Extracción de minerales metáliferos,
+X11,Extracción de minerales no metálicos,X
+X12,INDUSTRIA MANUFACTURERA,
+X13,"Alimentos, bebidas y tabaco",X
+X14,Resto de la Industria,X
+X15,"SUMINISTRO DE ELECTRICIDAD, GAS Y AGUA",
+X16,"Generación, captación y distribución de energía eléctrica",
+X17,Fabricación de gas; distribución de combustibles gaseosos por tuberías; suministro de vapor y agua caliente,X
+X18,"Captación, depuración y distribución de agua",X
+X19,"Eliminación de desperdicios y aguas residuales, saneamiento y actividades similares",X
+X20,CONSTRUCCION,
+X21,Construcción de edificaciones completas y de partes de edificaciones;  acondicionamiento de edificaciones,X
+X22,Construcción de obras de ingeniería civil,
+X23,"COMERCIO, REPARACIÓN, RESTAURANTES Y HOTELES",
+X24,Comercio,X
+X25,Mantenimiento y reparación de vehículos automotores; reparación de efectos personales y enseres domésticos,X
+X26,"Hoteles, restaurantes, bares y similares",X
+X27,"TRANSPORTE, ALMACENAMIENTO Y COMUNICACIONES",
+X28,Transporte por vía terrestre,X
+X29,Transporte por vía acuática,
+X30,Transporte por vía aérea,X
+X31,Actividades complementarias y auxiliares al transporte; actividades de agencias de viajes,X
+X32,Correo y telecomunicaciones,X
+X33,"ESTABLECIMIENTOS FINANCIEROS, SEGUROS, ACTIVIDADES INMOBILIARIAS Y SERVICIOS A LAS EMPRESAS",
+X34,Intermediación financiera,X
+X35,Actividades inmobiliarias y alquiler de vivienda,X
+X36,Actividades de servicios a las empresas excepto servicios financieros e inmobiliarios,X
+X37,"ACTIVIDADES DE SERVICIOS SOCIALES, COMUNALES Y PERSONALES",
+X38,Administración pública y defensa; seguridad social de afiliación obligatoria,X
+X39,Educación de mercado,X
+X40,Educación de no mercado,
+X41,Servicios sociales y de salud de mercado,X
+X42,Actividades de asociaciones n.c.p.; actividades de esparcimiento y actividades culturales y deportivas; otras actividades de servicios de mercado,X
+X43,Actividades de asociaciones n.c.p.; actividades de esparcimiento y actividades culturales y deportivas; otras actividades de servicios de no mercado,X
+X44,Hogares privados con servicio doméstico,X
+X45,Subtotal Valor Agregado,X
+X46,Impuestos,X
+X47,PIB TOTAL DEPARTAMENTAL,

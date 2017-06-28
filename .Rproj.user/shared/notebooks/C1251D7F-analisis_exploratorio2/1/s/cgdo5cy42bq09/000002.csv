@@ -1,0 +1,6 @@
+"0","setwd(""~/Documents/datathonlatam"") ## setting dir"
+"0","library(readr)"
+"0","arc <- list.files(""./datasets/educacion_superior"", pattern = "".csv"") ## creating list files csv"
+"0","acreditacion <- read_csv(paste(""./datasets/educacion_superior"", arc[1], sep = ""/""))"
+"0","names(acreditacion) <- c(""departamento"", ""anio"", "
+"0","                         paste(""acr"", gsub(""tecnica profesional"", ""tecpro"", tolower(names(acreditacion)[3:8])), sep = ""_"") )"

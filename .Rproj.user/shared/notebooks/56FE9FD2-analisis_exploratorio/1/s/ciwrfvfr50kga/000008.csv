@@ -1,0 +1,2 @@
+"0","library(ggplot2)"
+"0","ggplot(data = graduados, aes(x = anio, y = gra_tecpro, colour = departamento)) + geom_line()"

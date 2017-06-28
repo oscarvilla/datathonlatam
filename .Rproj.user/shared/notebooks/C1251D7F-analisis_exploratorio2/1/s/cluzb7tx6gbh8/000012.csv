@@ -1,0 +1,2 @@
+"0","library(corrplot)"
+"0","corrplot(correlaciones[1:37, 38:43], order = ""original"", tl.cex = 0.6, tl.col = ""black"", type = ""lower"", diag = FALSE, title = ""Correlaciones entre todas las variables"")"

@@ -1,0 +1,3 @@
+"0","df_limpio <- df[, -c(4, 10, 15, 18, 23, 26, 30, 36, 40, 50)]"
+"0","correlaciones <- cor(df_limpio[, c(3:ncol(df_limpio))])"
+"0","heatmap(correlaciones)"
