@@ -1,0 +1,202 @@
+---
+title: "Modelo generativo-predictivo de matrículas a partir del PIB"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+# Introducción: 
+
+En el marco del concurso **Datathonlatam** de innovación con datos abiertos ... descripción del objetivo:
+
+vamos a elaborar modelos que calculen el número de matrículas un dado nivel educativo para cada departamento a partir del algunos de los valores del PIB del mismo año. Esto permitirá establecer la cantidad y magnitud de la afectación de las diferentes industrias (subvalores del PIB departamental) sobre el número de matrículas en los diferentes niveles educativos.
+
+## Objetivo general:
+
+## Objetivos específicos:
+
+1. Obtención, transformación, limpieza y ordenado de datos.
+2. Análisis exploratorio de datos.
+3. Creación de un modelo lineal regresivo por cada nivel educativo.
+4. Análisis de los pesos de las variables y sus p-values.
+5. Reflexiones.
+6. Predicciones de los PIB necesarios para alimentar los modelos lineales en tres (3) departamentos.
+7. Análisis de los pesos de los tn para las predicciones.
+8. Alimentación de los modelos previamente creados para calcular la demanda de matrículas por nivel académico para 2016 y 2017 en los tres (3) departamentos.
+9. Conclusiones.
+
+## Estado de la cuestión:
+
+
+
+## 1. Obteniendo datos:
+
+Los datos que vamos a tomar provienen de la [página del MEN](), del [DANE]() y de [datos abiertos](https://www.datos.gov.co). 
+
+En su estado original no tenían la disposición que vamos a darle, por eso reseñamos los links en los que pueden encontrarlos en su estado original.
+
+El principal trabajo consistió en diseñar la disposición del set de datos de manera que sea útil para alimentar un modelo lineal regresivo, series de tiempo, modelos de aprendizaje automático e incluso modelos neuronales.
+
+
+### 1.1. Datos sobre matrículas:
+
+Las matrículas que en cada año en cada departamento se hacen. Esto por cada nivel educativo:
+
+
+```{r, get_data, echo=TRUE, message=FALSE, cache=TRUE}
+setwd("~/Documents/datathonlatam") ## setting dir
+library(readr)
+arc <- list.files("./datasets/educacion_superior", pattern = ".csv") ## creating list files csv
+
+matricula <- read_csv(paste("./datasets/educacion_superior", arc[4], sep = "/"))
+names(matricula) <- c("departamento", "anio", 
+                      paste("matr", gsub("tecnica profesional", "tecpro", tolower(names(matricula)[3:8])), sep = "_") )
+```
+
+Tenemos un set de datos de `r dim(matricula)[1]` filas por `r dim(matricula)[2]` columnas que contiene los `r length(unique(matricula$departamento))` departamentos: `r sort(unique(matricula$departamento))`. Esto para los años `r sort(unique(matricula$anio))` y para los niveles educativos `r colnames(matricula)[3:8]`. Una muestra:
+
+```{r, tabla_matriculas, echo=TRUE, cache=TRUE}
+head(matricula)
+```
+
+### 1.2. Datos sobre PIB:
+
+El Producto Interno Bruto por departamento, por año, desagregado en sus 47 componentes:
+
+
+```{r, import_PIB, cache=TRUE, echo=TRUE, message=FALSE}
+totalpib <- data.frame() ## empty data frame to fill
+k <- 0 ## a counter for naming by department from departamentos var
+departamentos <- readRDS("./departamentosRDS")
+library(readxl) ## library needed to read xls
+for(i in seq(from = 2, to = 66, by = 2)) { ## We'll read even sheets (by number, not by name)
+
+pib <- read_excel("~/Documents/datathonlatam/datasets/Copia de PIB_Departamentos_2015provisional.xls", 
+                 sheet = i, skip = 5, range = "A7:Q59") ## read just a range of the sheet
+pib <- pib[!is.na(pib[, 1]) & !is.na(pib[, 2]), c(1, 2:16)] ## delete NAs and keep 2010 to 2015
+pib <- data.frame(t(pib)) ## transpose
+k <- k + 1 ## increase 'iterator' of departamentos names
+pib$departamento <- departamentos[k] ## namig the departamento
+pib$anio <- rownames(pib) ## anio as value not just as rowname
+pib <- pib[c(2:nrow(pib)), c(48:49, 1:47)] ## erasing first row and reordering cols-vars
+totalpib <- rbind(totalpib, pib) ## stacking results in one data frame
+}
+
+rm(pib) ## erase inecessary data frame
+
+totalpib[, 3:ncol(totalpib)] <- apply(totalpib[, 3:ncol(totalpib)], 2, as.integer) ## data as numeric
+
+library(readr)
+dummy_names_PIB <- as.data.frame(read_csv("~/Documents/datathonlatam/dummy_names_PIB.csv")[, c(1:2)])
+```
+
+
+Los nombres de cada uno de las subvariables del PIB por departamento anual tuvieron que ser sustituidas en su orden por variables X1, X2, X3, ... , X47. Sus nombres reales se listan:
+
+
+```{r, lista_var_PIB, echo=TRUE, cache=TRUE}
+dummy_names_PIB[, 2]
+```
+
+Tenemos un set de datos de `r dim(totalpib)[1]` filas por `r dim(totalpib)[2]` columnas que contiene los `r length(unique(totalpib$departamento))` departamentos: `r sort(unique(totalpib$departamento))`. Esto para los años `r sort(unique(totalpib$anio))` y para las 47 variables reseñadas antes.
+
+### 1.3. Datos sobre proyecciones poblacionales:
+
+El DANE, a partir del CENSO 2005 hizo proyecciones sobre la población en cada uno de los departamentos. Estos datos son los que tomamos.
+
+
+```{r, censo, cache=TRUE, message=FALSE}
+library(readr)
+dane <- read_csv("./datasets/censo 2005/proyeccion poblacion DANE 2005.csv")
+
+totaldane <- data.frame()
+for( i in 1:nrow(dane)){
+    temp <- data.frame(departamento = dane[i, 1], 
+                                  anio = seq(1985, 2020), 
+                                  proy = as.numeric(dane[i, 2:ncol(dane)]))
+    totaldane <- rbind(totaldane, temp)
+}
+
+rm(list = c("dane", "temp"))
+```
+
+
+Tenemos un set de datos de `r dim(totaldane)[1]` filas por `r dim(totaldane)[2]` columnas que contiene los `r length(unique(totaldane$departamento))` departamentos: `r sort(unique(totaldane$departamento))`. Esto para los años `r sort(unique(totaldane$anio))`.
+
+### 1.4. Juntando todos los datos:
+
+Dado que para cada set de datos tenemos siempre los 33 departamentos pero no el mismo periodo de años, vamos a juntarlos durante los años comunes a todos (de 2010 a 2015) y conservando todas las variables. El nombre de los departamentos lo vamos a conservar como factor, y el resto como numérico.
+
+
+```{r, join_all, echo=TRUE, cache=TRUE}
+df <- merge(merge(totaldane, totalpib), matricula)
+df$departamento <- as.factor(df$departamento)
+df$proy <- as.integer(df$proy)
+str(df)
+```
+
+
+## 2. Análisis exploratorio de datos.
+
+Ahora que hemos definido nuestro set de datos vamos a explorarlo. 
+Lo primero que necesitamos es remover algunas variables del PIB que son suma de otras (X1 es la suma de X2 a X6, X7 es la suma de X8 a X11 ... Las que aparecen relacionadas en mayúsculas son la suma de las siguientes en minúsculas, de acuerdo con la tabla presentada en el  apartado [1.2. Datos sobre PIB:]) ya que son redundantes.
+
+```{r, quitando_PIB_redundantes, echo=TRUE, cache=TRUE}
+df_limpio <- df[, -c(4, 10, 15, 18, 23, 26, 30, 36, 40, 48:50)]
+correlaciones <- cor(df_limpio[, c(2:ncol(df_limpio))])
+```
+
+Pasamos de tener un set de datos de `r dim(df)[1]` por `r dim(df)[2]` a tener uno de `r dim(df_limpio)[1]` por `r dim(df_limpio)[2]`
+
+
+### 2.2. Revisando correlaciones:
+
+Una vez retiradas las variables podemos revisar las correlaciones entre todas las variables del PIB y las de matrículas en educación superior por nivel educativo; dejando por fuera los datos no numéricos ( los nombres de los departamentos):
+
+```{r, cache=TRUE, corrplots, echo=TRUE, out.extra='angle=90'}
+library(corrplot)
+corrplot(correlaciones[1:37, 38:43], order = "original", tl.cex = 0.6, tl.col = "black", type = "lower", diag = FALSE)
+
+correlate <- cor(df_limpio[, c(39:44)], df_limpio[, c(2:38)])
+library(gplots)
+heatmap.2(correlate, dendrogram='none', Rowv=FALSE, Colv=FALSE,trace='none', margins = c(4, 13))
+```
+
+
+## 3. Creación de un modelo lineal regresivo por cada nivel educativo.
+
+Nos referimos a un modelo generativo como aquel que permite a establecer la medida en que las variables independientes o conocidas determinan la variable dependiente o a predecir. En el presente caso, un modelo generativo permite predecir el número de matrículas para un nivel educativo a partir de algunos de los valores del PIB del departamento: si conocemos algunos datos del PIB del departamento, podemos predecir o inferir el número de matrículas de cierto nivel académico en el departamento. 
+
+Lo importante de este tipo de modelo es que permite extraer la medida en que cada uno de los rubros del PIB contribuye al aumento o decremento del número de matrículas, y nos delimita el número de variables del PIB sobre las que tendremos que llevar a cabo predicciones para calcular las matrículas en años futuros.
+
+
+```{r, modelo1, echo=TRUE, cache=TRUE}
+matr_tecpro <- df_limpio[, c(2:39)]
+matr_tecpro$class <- ifelse(df_limpio$departamento == "BOGOTA D.C.", 1, 0)
+model1 <- lm(matr_tecpro ~ .,data = matr_tecpro)
+summary(model1)
+plot(matr_tecpro$matr_tecpro, predict(model1, df_limpio[, c(2:38)]))
+abline(a = 0, b = 1)
+```
+
+
+```{r, correlaciones_entrePIB, echo=FALSE, cache=TRUE}
+matr_tecpro_pred <- matr_tecpro[, -38]
+numericData <- matr_tecpro_pred[sapply(matr_tecpro_pred, is.numeric)]
+descrCor <- cor(numericData)
+
+library(corrplot)
+corrplot(descrCor, order = "original", tl.cex = 0.6, tl.col = "black", type = "lower", diag = FALSE)
+```
+
+Debemos tener cuidado con las variables independientes que tienen altas correlaciones entre ellas
+
+
+######################################################################################
+## 4. Análisis de los pesos de las variables y sus p-values.
+## 5. Reflexiones.
+## 6. Predicciones de los PIB necesarios para alimentar los modelos lineales en tres (3) departamentos.
+## 7. Análisis de los pesos de los tn para las predicciones.
+## 8. Alimentación de los modelos previamente creados para calcular la demanda de matrículas por nivel académico para 2016 y 2017 en los tres (3) departamentos.
+## 9. Conclusiones.
+

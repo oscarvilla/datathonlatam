@@ -1,4 +1,0 @@
-"0","library(qgraph)"
-"0","qgraph(cor(correlate), shape=""circle"", "
-"0","       posCol=""darkblue"", negCol=""darkred"", "
-"0","       layout=""spring"", vsize=8)"

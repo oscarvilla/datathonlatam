@@ -1,1 +1,0 @@
-"0","ggplot(data = graduados, aes(x = anio, y = gra_tecnologica, colour = departamento)) + geom_line()"
