@@ -1,8 +1,9 @@
 ---
 title: "Modelo generativo-predictivo de matrículas a partir del PIB"
 output:
-  html_document: default
+  pdf_document: default
   html_notebook: default
+  html_document: default
 ---
 
 # Introducción: 
@@ -169,28 +170,35 @@ Nos referimos a un modelo generativo como aquel que permite a establecer la medi
 
 Lo importante de este tipo de modelo es que permite extraer la medida en que cada uno de los rubros del PIB contribuye al aumento o decremento del número de matrículas, y nos delimita el número de variables del PIB sobre las que tendremos que llevar a cabo predicciones para calcular las matrículas en años futuros.
 
+Debido a que BOGOTA D.C. tiene matrículas muy altas con respecto a los demás departamentos, no vamos a tratarle como un outlier sino que vamos a crear una variable que señale si el departamento es BOGOTA D.C. o no. Así podemos dejar por fuera del modelo el nombre del departamento sin sacrificar la información que aporta. Además de que en modelos previos (no se van a mostrar) vimos que ser el departamento BOGOTA D.C. aporta mucha información al modelo, pero los demás departamentos no.
+
 
 ```{r, modelo1, echo=TRUE, cache=TRUE}
 matr_tecpro <- df_limpio[, c(2:39)]
 matr_tecpro$class <- ifelse(df_limpio$departamento == "BOGOTA D.C.", 1, 0)
 model1 <- lm(matr_tecpro ~ .,data = matr_tecpro)
 summary(model1)
-plot(matr_tecpro$matr_tecpro, predict(model1, df_limpio[, c(2:38)]))
+plot(matr_tecpro$matr_tecpro, predict(model1, matr_tecpro[, -38]))
 abline(a = 0, b = 1)
 ```
 
 
-```{r, correlaciones_entrePIB, echo=FALSE, cache=TRUE}
-matr_tecpro_pred <- matr_tecpro[, -38]
-numericData <- matr_tecpro_pred[sapply(matr_tecpro_pred, is.numeric)]
-descrCor <- cor(numericData)
-
-library(corrplot)
-corrplot(descrCor, order = "original", tl.cex = 0.6, tl.col = "black", type = "lower", diag = FALSE)
+```{r, model2, echo=TRUE, cache=TRUE}
+matr_tecpro2 <- matr_tecpro[, -c(1, 2, 4, 9, 10, 14:17, 20, 23, 27, 28, 36)]
+model2 <- lm(matr_tecpro ~ .,data = matr_tecpro2)
+summary(model2)
+plot(matr_tecpro$matr_tecpro, predict(model2, matr_tecpro2[, -38]))
+abline(a = 0, b = 1)
 ```
 
-Debemos tener cuidado con las variables independientes que tienen altas correlaciones entre ellas
 
+```{r}
+par(mfrow = c(2, 4))
+plot(model1)
+plot(model2)
+dim(matr_tecpro)
+dim(matr_tecpro2)
+```
 
 ######################################################################################
 ## 4. Análisis de los pesos de las variables y sus p-values.
